@@ -9,7 +9,7 @@
     "db:migrate": "prisma migrate deploy",
     "db:push": "prisma db push",
     "db:studio": "prisma studio",
-    "dev": "next dev -H 0.0.0.0 --turbo",
+    "dev": "next dev -H 0.0.0.0",
     "postinstall": "prisma generate",
     "preview": "next build && next start",
     "start": "next start",
