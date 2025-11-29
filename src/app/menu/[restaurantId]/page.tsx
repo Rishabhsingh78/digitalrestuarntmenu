@@ -12,6 +12,7 @@ export default function PublicMenuPage() {
     const categories = api.menu.getCategories.useQuery({ restaurantId });
     const allDishes = api.menu.getDishes.useQuery({ restaurantId });
     const [activeCategory, setActiveCategory] = useState<string>("");
+    const [isMenuOpen, setIsMenuOpen] = useState(false);
 
     // Combine categories with uncategorized dishes
     const menuSections = [
@@ -54,8 +55,6 @@ export default function PublicMenuPage() {
 
     if (categories.isLoading || allDishes.isLoading) return <div className="p-8 text-center">Loading menu...</div>;
     if (menuSections.length === 0) return <div className="p-8 text-center">Menu not available. Please add categories and dishes in the dashboard.</div>;
-
-    const [isMenuOpen, setIsMenuOpen] = useState(false);
 
     return (
         <div className="min-h-screen bg-gray-50 pb-20">

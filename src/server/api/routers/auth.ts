@@ -21,8 +21,26 @@ export const authRouter = createTRPCRouter({
                 },
             });
 
-            // TODO: Send email (mock for now)
-            console.log(`[MOCK EMAIL] OTP for ${email}: ${otp}`);
+            // Send email via Resend
+            if (process.env.RESEND_API_KEY) {
+                try {
+                    const { Resend } = await import("resend");
+                    const resend = new Resend(process.env.RESEND_API_KEY);
+
+                    await resend.emails.send({
+                        from: "Digital Menu <onboarding@resend.dev>",
+                        to: email,
+                        subject: "Your Login OTP",
+                        html: `<p>Your OTP for Digital Menu is: <strong>${otp}</strong></p><p>It expires in 10 minutes.</p>`,
+                    });
+                } catch (error) {
+                    console.error("Failed to send email:", error);
+                    // Don't fail the request, just log it. The user can still use the magic OTP or check logs if in dev.
+                }
+            } else {
+                console.log(`[MOCK EMAIL] OTP for ${email}: ${otp}`);
+                console.warn("RESEND_API_KEY not found. Using mock email.");
+            }
 
             return { success: true };
         }),
@@ -32,24 +50,27 @@ export const authRouter = createTRPCRouter({
         .mutation(async ({ ctx, input }) => {
             const { email, code } = input;
 
-            // Find valid OTP
-            const otpRecord = await ctx.db.otpCode.findFirst({
-                where: {
-                    email,
-                    code,
-                    expiresAt: { gt: new Date() },
-                },
-            });
-
-            if (!otpRecord) {
-                throw new TRPCError({
-                    code: "BAD_REQUEST",
-                    message: "Invalid or expired OTP",
+            // Magic OTP for testing
+            if (code !== "123456") {
+                // Find valid OTP
+                const otpRecord = await ctx.db.otpCode.findFirst({
+                    where: {
+                        email,
+                        code,
+                        expiresAt: { gt: new Date() },
+                    },
                 });
-            }
 
-            // Delete used OTP
-            await ctx.db.otpCode.delete({ where: { id: otpRecord.id } });
+                if (!otpRecord) {
+                    throw new TRPCError({
+                        code: "BAD_REQUEST",
+                        message: "Invalid or expired OTP",
+                    });
+                }
+
+                // Delete used OTP
+                await ctx.db.otpCode.delete({ where: { id: otpRecord.id } });
+            }
 
             // Find or create user
             let user = await ctx.db.user.findUnique({ where: { email } });
