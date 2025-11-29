@@ -46,3 +46,9 @@ Open [http://localhost:3000](http://localhost:3000) in your browser.
 - `src/server/api`: TRPC routers (Backend logic)
 - `prisma/schema.prisma`: Database schema
 - `src/components`: UI components (shadcn/ui)
+
+
+## IDE used:
+- Visual Studio Code
+## Ai used:
+- ChatGPT for some UI changes and css changes
